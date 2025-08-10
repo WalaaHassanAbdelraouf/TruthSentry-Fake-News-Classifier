@@ -1,44 +1,45 @@
-# TruthSentry-Fake-News-Classifier
+# TruthSentry: Fake News Classifier
 
 ## Overview
-This project aims to classify news articles as fake or true using machine learning techniques. The dataset used is the "Fake and Real News Dataset" from Kaggle, containing a total of 44,919 news articles (23,502 fake and 21,417 true). The project employs text preprocessing, feature extraction, and a logistic regression model to achieve high classification accuracy.
+TruthSentry is a machine learning project designed to classify news articles as fake or true. It uses a logistic regression model trained on text data processed with TF-IDF vectorization. A Flask-based web application is included, allowing users to input text and receive predictions on whether the news is fake or true.
+
+The dataset is sourced from [Kaggle](https://www.kaggle.com/datasets/clmentbisaillon/fake-and-real-news-dataset), containing 44,919 news articles (23,502 fake and 21,417 true).
 
 ## Dataset
-The dataset is sourced from [Kaggle](https://www.kaggle.com/datasets/clmentbisaillon/fake-and-real-news-dataset) and consists of two CSV files:
-- **Fake.csv**: Contains 23,502 fake news articles.
-- **True.csv**: Contains 21,417 true news articles.
+The dataset consists of two CSV files:
+- **Fake.csv**: 23,502 fake news articles.
+- **True.csv**: 21,417 true news articles.
 
-Each article includes the following columns:
+Each article includes:
 - **Title**: The title of the news article.
 - **Text**: The body text of the news article.
 - **Subject**: The subject or category of the news article.
 - **Date**: The publication date of the news article.
 
-## Methodology
-The project follows these key steps:
+**Important**: Due to their large size, `Fake.csv` and `True.csv` are not included in this repository. Download them from [Kaggle](https://www.kaggle.com/datasets/clmentbisaillon/fake-and-real-news-dataset) and place them in the `data/` folder. The `data/` directory contains a `.gitkeep` file to maintain its structure in the repository.
 
+## Methodology
 1. **Data Preprocessing**:
-   - **Text Cleaning**: The text is processed using the `clean_text` function, which:
-     - Converts text to lowercase.
-     - Removes special characters and punctuation using regex.
-     - Removes numerical digits.
-     - Eliminates extra whitespace.
-     - Removes stopwords (common words like "the", "is") to reduce noise.
-     - Applies lemmatization to normalize words to their base form.
-   - **Label Encoding**: The `Subject` column is encoded numerically to enable model processing.
+   - **Text Cleaning**: The `clean_text` function processes text by:
+     - Converting to lowercase.
+     - Removing special characters, punctuation, and numbers.
+     - Eliminating extra whitespace.
+     - Removing stopwords.
+     - Applying lemmatization.
+   - **Label Encoding**: The `Subject` column is encoded numerically.
    
 2. **Feature Extraction**:
-   - **TF-IDF Vectorization**: The cleaned text is transformed into numerical features using Term Frequency-Inverse Document Frequency (TF-IDF), capturing the importance of words in the dataset.
+   - Text is transformed into numerical features using TF-IDF vectorization.
 
 3. **Model Training**:
-   - A **Logistic Regression** model is trained on the TF-IDF features to classify articles as fake or true.
+   - A logistic regression model is trained on the TF-IDF features.
 
 4. **Evaluation**:
-   - The model is evaluated on training, validation, and test sets, yielding the following accuracies:
+   - Model performance:
      - **Training Accuracy**: 96.91%
      - **Validation Accuracy**: 96.80%
      - **Test Accuracy**: 96.73%
 
-## Results
-The logistic regression model demonstrates strong performance, achieving over 96% accuracy across training, validation, and test sets. These results suggest the model effectively distinguishes between fake and true news articles based on the processed text features.
+5. **Web Application**:
+   - A Flask app (`app.py`) allows users to input text and receive predictions using the trained model.
 
