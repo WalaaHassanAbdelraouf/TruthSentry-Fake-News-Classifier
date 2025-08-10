@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fake News Detector</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 40px 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 1rem;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .predict-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 18px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .predict-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .predict-btn:active {
+            transform: translateY(0);
+        }
+
+        .predict-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-container {
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+            animation: slideIn 0.5s ease;
+        }
+
+        .result-real {
+            background: linear-gradient(135deg, #00b894, #00a085);
+            color: white;
+        }
+
+        .result-fake {
+            background: linear-gradient(135deg, #e17055, #d63031);
+            color: white;
+        }
+
+        .result-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .result-confidence {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        .error-message {
+            color: #d63031;
+            background: rgba(214, 48, 49, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .example-btn {
+            background: #74b9ff;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            transition: background 0.3s ease;
+        }
+
+        .example-btn:hover {
+            background: #0984e3;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .header {
+                padding: 30px 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .main-content {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Fake News Detector</h1>
+            <p>AI-powered tool to identify fake news articles using machine learning</p>
+        </div>
+
+        <div class="main-content">
+            <form id="newsForm">
+                <div class="form-group">
+                    <label for="title">📰 Article Title</label>
+                    <input type="text" id="title" name="title" placeholder="Enter the news article title..." required>
+                    <button type="button" class="example-btn" onclick="fillExample('title')">Use Example</button>
+                </div>
+
+                <div class="form-group">
+                    <label for="text">📝 Article Content</label>
+                    <textarea id="text" name="text" placeholder="Paste the full article content here..." required></textarea>
+                    <button type="button" class="example-btn" onclick="fillExample('text')">Use Example</button>
+                </div>
+
+                <div class="form-group">
+                    <label for="subject">🏷️ Subject Category</label>
+                    <select id="subject" name="subject" required>
+                        <option value="">Select a category...</option>
+                        <option value="politicsNews">Politics</option>
+                        <option value="worldnews">World News</option>
+                        <option value="News">General News</option>
+                        <option value="left-news">Left News</option>
+                        <option value="Government News">Government News</option>
+                        <option value="Middle-east">Middle East</option>
+                        <option value="US_News">US News</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="predict-btn" id="predictBtn">
+                    🚀 Analyze Article
+                </button>
+            </form>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analyzing article with AI...</p>
+            </div>
+
+            <div class="result-container" id="resultContainer">
+                <div class="result-title" id="resultTitle"></div>
+                <div class="result-confidence" id="resultConfidence"></div>
+            </div>
+
+            <div class="error-message" id="errorMessage"></div>
+        </div>
+
+        <div class="footer">
+            <p>Powered by Machine Learning • Built with ❤️ for accurate news detection</p>
+        </div>
+    </div>
+
+    <script>
+        // Example data for demonstration
+        const examples = {
+            title: "Scientists Discover Revolutionary Cancer Treatment with 100% Success Rate",
+            text: "In a groundbreaking study that has shocked the medical community, researchers at an undisclosed laboratory have announced the development of a revolutionary cancer treatment that boasts a 100% success rate in clinical trials. The treatment, which uses a combination of nanotechnology and gene therapy, has reportedly cured all forms of cancer in over 10,000 patients during secret trials conducted over the past five years. Dr. Sarah Johnson, the lead researcher, claims that this breakthrough will make cancer a thing of the past within the next decade. The pharmaceutical industry is said to be in panic as this treatment costs only $50 per patient and can be administered at home. However, critics argue that the lack of peer-reviewed publications and the secrecy surrounding the trials raise serious questions about the validity of these claims."
+        };
+
+        function fillExample(field) {
+            if (field === 'title') {
+                document.getElementById('title').value = examples.title;
+            } else if (field === 'text') {
+                document.getElementById('text').value = examples.text;
+                document.getElementById('subject').value = 'News';
+            }
+        }
+
+        // Clean text function (matching your preprocessing)
+        function cleanText(text) {
+            // Basic client-side cleaning (simplified version)
+            return text
+                .toLowerCase()
+                .replace(/[^a-zA-Z0-9\s]/g, '')  // Remove special characters
+                .replace(/\d+/g, '')             // Remove numbers
+                .replace(/\s+/g, ' ')            // Remove extra whitespace
+                .trim();
+        }
+
+        // Simulate prediction (replace with actual API call to your model)
+        async function predictNews(title, text, subject) {
+            // This is a simulation - replace with actual model prediction
+            // In real deployment, this would call your Flask/FastAPI backend
+            
+            await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate processing time
+            
+            // Simulate prediction logic
+            const fakeKeywords = ['secret', 'hidden', 'conspiracy', 'shocking', 'undisclosed', '100%', 'panic'];
+            const textLower = text.toLowerCase();
+            const titleLower = title.toLowerCase();
+            
+            let fakeScore = 0;
+            fakeKeywords.forEach(keyword => {
+                if (textLower.includes(keyword) || titleLower.includes(keyword)) {
+                    fakeScore += 0.2;
+                }
+            });
+            
+            // Add some randomness
+            fakeScore += Math.random() * 0.3;
+            
+            const isFake = fakeScore > 0.5;
+            const confidence = Math.min(0.95, Math.max(0.55, fakeScore + Math.random() * 0.2));
+            
+            return {
+                prediction: isFake ? 0 : 1,
+                label: isFake ? 'Fake News' : 'Real News',
+                confidence: confidence,
+                fake_probability: isFake ? confidence : 1 - confidence,
+                real_probability: isFake ? 1 - confidence : confidence
+            };
+        }
+
+        // Handle form submission
+        document.getElementById('newsForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById('title').value.trim();
+            const text = document.getElementById('text').value.trim();
+            const subject = document.getElementById('subject').value;
+            
+            if (!title || !text || !subject) {
+                showError('Please fill in all fields');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('resultContainer').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('predictBtn').disabled = true;
+            
+            try {
+                // Clean the text (basic version)
+                const cleanedTitle = cleanText(title);
+                const cleanedText = cleanText(text);
+                
+                // Make prediction
+                const result = await predictNews(cleanedTitle, cleanedText, subject);
+                
+                // Show result
+                showResult(result);
+                
+            } catch (error) {
+                showError('An error occurred while analyzing the article. Please try again.');
+                console.error('Prediction error:', error);
+            } finally {
+                // Hide loading
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('predictBtn').disabled = false;
+            }
+        });
+
+        function showResult(result) {
+            const container = document.getElementById('resultContainer');
+            const title = document.getElementById('resultTitle');
+            const confidence = document.getElementById('resultConfidence');
+            
+            const isReal = result.prediction === 1;
+            const confidencePercent = (result.confidence * 100).toFixed(1);
+            
+            // Set content
+            title.textContent = result.label;
+            confidence.textContent = `Confidence: ${confidencePercent}%`;
+            
+            // Set styling
+            container.className = isReal ? 'result-container result-real' : 'result-container result-fake';
+            
+            // Show result
+            container.style.display = 'block';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        // Add some interactivity
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add focus effects
+            const inputs = document.querySelectorAll('input, textarea, select');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentNode.style.transform = 'scale(1.02)';
+                    this.parentNode.style.transition = 'transform 0.2s ease';
+                });
+                
+                input.addEventListener('blur', function() {
+                    this.parentNode.style.transform = 'scale(1)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
