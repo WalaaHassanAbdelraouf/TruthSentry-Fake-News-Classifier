@@ -42,8 +42,3 @@ The project follows these key steps:
 ## Results
 The logistic regression model demonstrates strong performance, achieving over 96% accuracy across training, validation, and test sets. These results suggest the model effectively distinguishes between fake and true news articles based on the processed text features.
 
-
-
-You can install them using:
-```bash
-pip install pandas numpy scikit-learn nltk
