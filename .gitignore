@@ -1,1 +1,21 @@
 
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Large dataset files
+data/Fake.csv
+data/True.csv
+
+# Miscellaneous
+*.log
+*.DS_Store
